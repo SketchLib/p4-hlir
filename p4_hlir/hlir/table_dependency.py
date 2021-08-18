@@ -518,13 +518,66 @@ class rmt_table_graph():
                 else:
                     edge_label = ""
                 if dependency.type_ == Dependency.SUCCESSOR:
-                    if dependency.to.conditional_barrier[1] == False:
-                        edge_label += " arrowhead = diamond"
-                    else:
-                        edge_label += " arrowhead = dot"
+                    #Hun added
+                    # print(len(dependency.to.conditional_barrier))
+                        # if dependency.to.conditional_barrier[1] == False:
+                        #     edge_label += " arrowhead = diamond"
+                        # else:
+                        #     edge_label += " arrowhead = dot"
+                    edge_label += " arrowhead = diamond"
                 out.write(table.name + " -> " + dependency.to.name +\
                           " [" + styles[dependency.type_] +\
                           " " + edge_label + "]" + ";\n")
+        out.write("}\n")
+
+
+    def generate_dot_without_cf(self, name = "ingress", out = sys.stdout,
+                     min_dep = Dependency.CONTROL_FLOW,
+                     with_condition_str = True,
+                     debug = False):
+        styles = {Dependency.CONTROL_FLOW: "style=dotted",
+                  Dependency.REVERSE_READ: "color=yellow",
+                  Dependency.PREDICATION: "color=green",
+                  Dependency.SUCCESSOR: "color=green",
+                  Dependency.ACTION: "color=blue",
+                  Dependency.MATCH: "color=red"}
+        out.write("digraph " + name + " {\n")
+
+        # set conditional tables to be represented as boxes
+        for table in self._nodes.values():
+            if isinstance(table, rmt_conditional_table):
+                if with_condition_str:
+                    label = "\"" + table.name + "\\n" +\
+                            str(table.condition) + "\""
+                    label = "label=" + label
+                else:
+                    label = table.name
+                out.write(table.name + " [shape=box " + label + "];\n")
+
+        for table in self._nodes.values():
+            for dependency in table.next_tables.values():
+                if dependency.type_ < min_dep:
+                    continue
+                if dependency.type_ == Dependency.REDUNDANT:
+                    continue
+                if debug:
+                    dep_fields = []
+                    for field in dependency.fields:
+                        dep_fields.append(str(field))
+                    edge_label = "label=\"" + ",\n".join(dep_fields) + "\""
+                    edge_label += " decorate=true"
+                else:
+                    edge_label = ""
+                    # print(len(dependency.to.conditional_barrier))
+                    # if dependency.to.conditional_barrier[1] == False:
+                    #     edge_label += " arrowhead = diamond"
+                    # else:
+                    #     edge_label += " arrowhead = dot"
+                    edge_label += " arrowhead = diamond"
+                if dependency.type_ != Dependency.CONTROL_FLOW:
+                    out.write(table.name + " -> " + dependency.to.name +\
+                              " [" + styles[dependency.type_] +\
+                              " " + edge_label + "]" + ";\n")
         out.write("}\n")
 
     def annotate_hlir(self):

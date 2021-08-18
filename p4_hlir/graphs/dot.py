@@ -225,3 +225,108 @@ def export_table_dependency_graph(hlir, filebase, gen_dir, show_conds = False):
         print "Egress pipeline is empty"
 
     print
+
+def export_table_dependency_graph_without_cf(hlir, filebase, gen_dir, show_conds = False):
+    print
+    print "TABLE DEPENDENCIES..."
+
+    print
+    print "INGRESS PIPELINE"
+
+    filename_dot = os.path.join(gen_dir, filebase + ".ingress.tables_dep_without_cf.dot")
+    # graph = dependency_graph.build_table_graph_ingress(hlir)
+    graph = dependency_graph.build_table_graph_ingress_without_cf(hlir)
+    min_stages = graph.count_min_stages(show_conds = show_conds)
+    print "pipeline ingress requires at least", min_stages, "stages"
+    with open(filename_dot, 'w') as dotf:
+        graph.generate_dot(out = dotf)
+
+    generate_graph(filename_dot,
+                   os.path.join(gen_dir, filebase + ".ingress.tables_dep_without_cf"))
+
+
+
+def export_table_dependency_graph_rmt(hlir, filebase, gen_dir, show_conds = False):
+    print
+    print "TABLE DEPENDENCIES..."
+
+    print
+    print "INGRESS PIPELINE"
+
+    filename_dot = os.path.join(gen_dir, filebase + ".ingress.tables_dep_rmt.dot")
+    import p4_hlir.hlir.table_dependency as table_dependency
+    graph = table_dependency.rmt_build_table_graph_ingress(hlir)
+
+    # min_stages = graph.count_min_stages(show_conds = show_conds)
+    # print "pipeline ingress requires at least", min_stages, "stages"
+    with open(filename_dot, 'w') as dotf:
+        graph.generate_dot(out = dotf)
+
+    generate_graph(filename_dot,
+                   os.path.join(gen_dir, filebase + ".ingress.tables_dep_rmt"))
+
+def export_table_dependency_graph_rmt_without_cf(hlir, filebase, gen_dir, show_conds = False):
+    print
+    print "TABLE DEPENDENCIES..."
+
+    print
+    print "INGRESS PIPELINE"
+
+    filename_dot = os.path.join(gen_dir, filebase + ".ingress.tables_dep_rmt_wo_cf.dot")
+    import p4_hlir.hlir.table_dependency as table_dependency
+    graph = table_dependency.rmt_build_table_graph_ingress(hlir)
+
+    # for table_name, table in graph._nodes.items():
+    #     print(table_name)
+    #     for p4_table, table_dep in table.next_tables.items():
+    #         if table_dep.type_ == table_dependency.Dependency.CONTROL_FLOW:
+
+    #             print("  ", p4_table.name, table_dep.type_, "control flow")
+    #         else:
+    #             print("  ", p4_table.name, table_dep.type_)
+    #         # print(k)
+    #         # print(v)
+    #         # print(k, v)
+    #     # print()
+
+    # min_stages = graph.count_min_stages(show_conds = show_conds)
+    # print "pipeline ingress requires at least", min_stages, "stages"
+    with open(filename_dot, 'w') as dotf:
+        graph.generate_dot_without_cf(out = dotf)
+
+    generate_graph(filename_dot,
+                   os.path.join(gen_dir, filebase + ".ingress.tables_dep_rmt_wo_cf"))
+
+# def export_table_dependency_graph_without_cf(hlir, filebase, gen_dir, show_conds = False):
+#     print
+#     print "TABLE DEPENDENCIES..."
+
+#     print
+#     print "INGRESS PIPELINE"
+
+#     filename_dot = os.path.join(gen_dir, filebase + ".ingress.tables_dep.dot")
+#     graph = dependency_graph.build_table_graph_ingress(hlir)
+#     # print()
+#     for table_name, table in graph.nodes.items():
+#         print(table_name)
+#         print(table)
+#         print()
+
+#         # print(type(table))
+#         # help(table)
+#         # exit(1)
+#         for node, edge in table.edges.items():
+#             print(node)
+#             print(edge)
+#             help(edge)
+#             # print(edge.type)
+#             exit(1)
+#         #     print(edge)
+
+#     min_stages = graph.count_min_stages(show_conds = show_conds)
+#     print "pipeline ingress requires at least", min_stages, "stages"
+#     with open(filename_dot, 'w') as dotf:
+#         graph.generate_dot(out = dotf)
+
+#     generate_graph(filename_dot,
+#                    os.path.join(gen_dir, filebase + ".ingress.tables_dep"))

@@ -93,7 +93,7 @@ class P4TreeNode(object):
     @classmethod
     def print_warning(cls, msg):
         cls.warnings_cnt += 1
-        print "Semantic warning: " + msg
+        # print "Semantic warning: " + msg
 
 class P4Program(P4TreeNode):
     def __init__(self, filename, lineno, objects):

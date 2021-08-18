@@ -64,7 +64,7 @@ class Edge:
         else:
             assert(False)
         self.dep = dep
-        
+
 class Graph:
     def __init__(self, name):
         self.name = name
@@ -204,6 +204,7 @@ class Graph:
                           " " + edge_label + "]" + ";\n")
         out.write("}\n")
 
+
 def _graph_get_or_add_node(graph, p4_node):
     node = graph.get_node(p4_node.name)
     if not node:
@@ -250,9 +251,58 @@ def generate_graph(p4_root, name):
         
     return graph
 
+def generate_graph_without_cf(p4_root, name):
+    graph = Graph(name)
+    next_tables = {p4_root}
+    visited = set()
+
+    root_set = False
+
+    while next_tables:
+        nt = next_tables.pop()
+        if nt in visited: continue
+        if not nt: continue
+
+        visited.add(nt)
+
+        node = _graph_get_or_add_node(graph, nt)
+        if not root_set:
+            graph.set_root(node)
+            root_set = True
+
+        for table, dep in nt.dependencies_for.items():
+            # print(table, dep)
+            # print(type(dep))
+            # print(dep.dependency_type)
+            # exit(1)
+            # print(table, dep)
+            # import p4_hlir.hlir.table_dependency as table_dependency
+            # if dep.dependency_type == table_dependency.Dependency.CONTROL_FLOW:
+            #     print("come?")
+            #     print(dep.dependency_type, table_dependency.Dependency.CONTROL_FLOW)
+            #     continue
+            node_to = _graph_get_or_add_node(graph, table)
+            edge = Edge(dep)
+            node.add_edge(node_to, edge)
+
+        next_ = set(nt.next_.values())
+        # for table in next_:
+        #     if table and table not in nt.dependencies_for:
+        #         node_to = _graph_get_or_add_node(graph, table)
+        #         edge = Edge()
+        #         node.add_edge(node_to, edge)
+
+        next_tables.update(next_)
+        
+    return graph
+
 # returns a rmt_table_graph object for ingress
 def build_table_graph_ingress(hlir):
     return generate_graph(hlir.p4_ingress_ptr.keys()[0], "ingress")
+
+# returns a rmt_table_graph object for ingress
+def build_table_graph_ingress_without_cf(hlir):
+    return generate_graph_without_cf(hlir.p4_ingress_ptr.keys()[0], "ingress")
 
 # returns a rmt_table_graph object for egress
 def build_table_graph_egress(hlir):
